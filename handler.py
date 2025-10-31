@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 R2_ENDPOINT = os.environ['R2_ENDPOINT_URL']
 R2_ACCESS_KEY = os.environ['R2_ACCESS_KEY_ID']
 R2_SECRET_KEY = os.environ['R2_SECRET_ACCESS_KEY']
-R2_BUCKET = os.environ.get('R2_BUCKET_NAME', 'chess')
+R2_BUCKET = 'chess'  # Hardcoded - always use 'chess' bucket
 
 # Test dataset location
 TEST_DATASET_PATH = '/workspace/dataset_test'
