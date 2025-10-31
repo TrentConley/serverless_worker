@@ -278,12 +278,13 @@ def runpod_handler(event):
 
 # For testing locally
 if __name__ == '__main__':
-    # Test with mock job
+    # Test with real submission from R2
+    # Update this to match an actual file in your R2 bucket
     test_job = {
         'input': {
             'submission_id': 1,
-            'submission_s3_key': 'submissions/test/123456/submission.tar.gz',
-            'full_name': 'Test User',
+            'submission_s3_key': 'submissions/Rouzbeh_Amin_Tafreshi/1761947104/demo_submission.tar.gz',
+            'full_name': 'Rouzbeh Amin Tafreshi',
             'quick_test': True
         }
     }
