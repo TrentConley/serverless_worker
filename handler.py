@@ -19,31 +19,65 @@ from pathlib import Path
 import boto3
 import logging
 
-# Configure logging
+# Configure logging - VERBOSE
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s'
 )
 logger = logging.getLogger(__name__)
 
+logger.info("=" * 80)
+logger.info("SERVERLESS WORKER STARTING UP")
+logger.info("=" * 80)
+
 # R2 Configuration
-R2_ENDPOINT = os.environ['R2_ENDPOINT_URL']
-R2_ACCESS_KEY = os.environ['R2_ACCESS_KEY_ID']
-R2_SECRET_KEY = os.environ['R2_SECRET_ACCESS_KEY']
+logger.info("Loading R2 configuration from environment...")
+try:
+    R2_ENDPOINT = os.environ['R2_ENDPOINT_URL']
+    logger.info(f"✓ R2_ENDPOINT_URL: {R2_ENDPOINT[:50]}...")
+except KeyError as e:
+    logger.error(f"✗ MISSING R2_ENDPOINT_URL environment variable!")
+    raise
+
+try:
+    R2_ACCESS_KEY = os.environ['R2_ACCESS_KEY_ID']
+    logger.info(f"✓ R2_ACCESS_KEY_ID: {R2_ACCESS_KEY[:8]}...")
+except KeyError as e:
+    logger.error(f"✗ MISSING R2_ACCESS_KEY_ID environment variable!")
+    raise
+
+try:
+    R2_SECRET_KEY = os.environ['R2_SECRET_ACCESS_KEY']
+    logger.info(f"✓ R2_SECRET_ACCESS_KEY: {R2_SECRET_KEY[:8]}...")
+except KeyError as e:
+    logger.error(f"✗ MISSING R2_SECRET_ACCESS_KEY environment variable!")
+    raise
+
 R2_BUCKET = 'chess'  # Hardcoded - always use 'chess' bucket
+logger.info(f"✓ R2_BUCKET: {R2_BUCKET}")
 
 # Test dataset location
 TEST_DATASET_PATH = '/workspace/dataset_test'
 TEST_DATASET_CACHE = '/runpod-volume/dataset_test' if os.path.exists('/runpod-volume') else '/tmp/dataset_test'
 
 # Initialize S3 client
-s3_client = boto3.client(
-    's3',
-    endpoint_url=R2_ENDPOINT,
-    aws_access_key_id=R2_ACCESS_KEY,
-    aws_secret_access_key=R2_SECRET_KEY,
-    region_name='auto'
-)
+logger.info("Initializing S3 client...")
+try:
+    s3_client = boto3.client(
+        's3',
+        endpoint_url=R2_ENDPOINT,
+        aws_access_key_id=R2_ACCESS_KEY,
+        aws_secret_access_key=R2_SECRET_KEY,
+        region_name='auto'
+    )
+    logger.info("✓ S3 client initialized successfully")
+except Exception as e:
+    logger.error(f"✗ Failed to initialize S3 client: {e}")
+    raise
+
+logger.info("=" * 80)
+logger.info("WORKER STARTUP COMPLETE - READY FOR JOBS")
+logger.info("=" * 80)
 
 
 def download_from_r2(s3_key: str, local_path: str):
@@ -197,21 +231,36 @@ def handler(job):
     logger.info("="*60)
     
     if not submission_s3_key:
+        error_msg = 'Missing submission_s3_key in job input'
+        logger.error(f"✗ {error_msg}")
         return {
-            'error': 'Missing submission_s3_key in job input'
+            'status': 'error',
+            'error': error_msg
         }
     
     try:
+        logger.info("")
+        logger.info("Step 1: Ensure test dataset is available")
+        logger.info("-" * 80)
         # Ensure test dataset is available
         test_dataset_path = ensure_test_dataset()
+        logger.info(f"✓ Test dataset ready at: {test_dataset_path}")
         
         # Create temporary directory for submission
+        logger.info("")
+        logger.info("Step 2: Download and extract submission")
+        logger.info("-" * 80)
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
+            logger.info(f"Created temp directory: {temp_path}")
             
             # Download submission
             tarball_path = temp_path / 'submission.tar.gz'
+            logger.info(f"Downloading submission from R2...")
+            logger.info(f"  S3 Key: {submission_s3_key}")
+            logger.info(f"  Local Path: {tarball_path}")
             download_from_r2(submission_s3_key, str(tarball_path))
+            logger.info(f"✓ Submission downloaded: {tarball_path.stat().st_size / 1024:.2f} KB")
             
             # Extract submission
             submission_dir = temp_path / 'submission'
