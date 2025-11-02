@@ -47,12 +47,16 @@ s3_client = boto3.client(
 
 
 def download_from_r2(s3_key: str, local_path: str):
-    """Download file from R2"""
-    logger.info(f"Downloading s3://{R2_BUCKET}/{s3_key} to {local_path}")
-    Path(local_path).parent.mkdir(parents=True, exist_ok=True)
-    s3_client.download_file(R2_BUCKET, s3_key, local_path)
-    size_mb = Path(local_path).stat().st_size / (1024 * 1024)
-    logger.info(f"Downloaded {size_mb:.2f} MB")
+    """Download file from R2 - fails fast on error"""
+    try:
+        logger.info(f"Downloading s3://{R2_BUCKET}/{s3_key} to {local_path}")
+        Path(local_path).parent.mkdir(parents=True, exist_ok=True)
+        s3_client.download_file(R2_BUCKET, s3_key, local_path)
+        size_mb = Path(local_path).stat().st_size / (1024 * 1024)
+        logger.info(f"Downloaded {size_mb:.2f} MB")
+    except Exception as e:
+        logger.error(f"Failed to download from R2: {e}")
+        raise RuntimeError(f"R2 download failed for {s3_key}: {str(e)}")
 
 
 def upload_to_r2(local_path: str, s3_key: str):
