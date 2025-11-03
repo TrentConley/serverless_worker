@@ -107,8 +107,8 @@ def evaluate_submission(
     images_dir = test_path / "images"
     labels_dir = test_path / "labels"
     
-    # Get all test images
-    image_files = sorted(images_dir.glob("*.png"))
+    # Get all test images (skip macOS metadata files)
+    image_files = sorted([p for p in images_dir.glob("*.png") if not p.name.startswith('._')])
     
     if max_samples:
         image_files = image_files[:max_samples]
@@ -138,7 +138,12 @@ def evaluate_submission(
             print(f"Warning: Missing label for {img_path.name}")
             continue
         
-        ground_truth = label_path.read_text().strip()
+        # Read ground truth (skip if it's corrupted/metadata)
+        try:
+            ground_truth = label_path.read_text().strip()
+        except UnicodeDecodeError:
+            print(f"Warning: Skipping corrupted label file: {label_path.name}")
+            continue
         
         # Run prediction with timing
         try:
