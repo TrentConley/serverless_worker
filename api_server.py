@@ -169,6 +169,14 @@ def run_evaluation(submission_dir: Path, test_dataset_path: str, quick_test: boo
             'status': 'error',
             'error': 'Evaluation timed out after 15 minutes'
         }
+    except subprocess.CalledProcessError as e:
+        logger.error(f"✗ Evaluation script failed with exit code {e.returncode}")
+        logger.error(f"STDOUT: {e.stdout}")
+        logger.error(f"STDERR: {e.stderr}")
+        return {
+            'status': 'error',
+            'error': f'Evaluation failed: {e.stderr or e.stdout or "Unknown error"}'
+        }
     except Exception as e:
         logger.error(f"✗ Evaluation failed: {e}")
         return {
