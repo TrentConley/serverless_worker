@@ -111,7 +111,7 @@ def ensure_test_dataset():
     logger.info("Extracting test dataset...")
     Path(TEST_DATASET_CACHE).parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        ['tar', '-xzf', tarball_path, '-C', str(Path(TEST_DATASET_CACHE).parent)],
+        ['tar', '--no-same-owner', '-xzf', tarball_path, '-C', str(Path(TEST_DATASET_CACHE).parent)],
         check=True
     )
     
@@ -209,7 +209,7 @@ def process_evaluation(job_id: str, request_data: EvaluationRequest):
             submission_dir.mkdir()
             logger.info("Extracting submission...")
             subprocess.run(
-                ['tar', '-xzf', str(tarball_path), '-C', str(submission_dir)],
+                ['tar', '--no-same-owner', '-xzf', str(tarball_path), '-C', str(submission_dir)],
                 check=True,
                 capture_output=True
             )
