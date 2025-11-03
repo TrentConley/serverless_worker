@@ -1,8 +1,10 @@
+# API Server dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
 # Core dependencies
-runpod==1.5.0
 boto3==1.34.34
 pillow==10.1.0
 
-# Add any ML dependencies your submissions might need
-# torch is already in the base image
-# numpy is already in the base image
+# torch and numpy already in RunPod base image
