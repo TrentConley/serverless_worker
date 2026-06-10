@@ -1,0 +1,17 @@
+[Unit]
+Description=Chess Evaluation API Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/workspace/serverless_worker
+EnvironmentFile=/workspace/.env
+ExecStart=/usr/bin/python3 /workspace/serverless_worker/api_server.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/workspace/api_server.log
+StandardError=append:/workspace/api_server.log
+
+[Install]
+WantedBy=multi-user.target

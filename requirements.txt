@@ -8,3 +8,4 @@ boto3==1.34.34
 pillow==10.1.0
 
 # torch and numpy already in RunPod base image
+certifi
